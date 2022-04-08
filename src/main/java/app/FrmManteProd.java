@@ -144,6 +144,15 @@ public class FrmManteProd extends JFrame {
 		cboProveedores.setBounds(300, 104, 120, 22);
 		contentPane.add(cboProveedores);
 
+		JButton btnNewButton_1 = new JButton("Buscar");
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				buscar();
+			}
+		});
+		btnNewButton_1.setBounds(324, 63, 89, 23);
+		contentPane.add(btnNewButton_1);
+
 		llenaCombo();
 	}
 
@@ -156,10 +165,10 @@ public class FrmManteProd extends JFrame {
 		for (Categoria c : lstCategorias) {
 			cboCategorias.addItem(c.getIdcategoria() + "-" + c.getDescripcion());
 		}
-		
+
 		List<Proveedor> proveedores = em.createQuery("select p from Proveedor p", Proveedor.class).getResultList();
 		cboProveedores.addItem("Seleccione");
-		for(Proveedor p : proveedores) {
+		for (Proveedor p : proveedores) {
 			cboProveedores.addItem(p.getNombre_rs());
 		}
 		em.close();
@@ -179,13 +188,27 @@ public class FrmManteProd extends JFrame {
 			txtSalida.append("Descripcicon: " + p.getDescripcion() + "\n");
 			txtSalida.append("Stock    : " + Integer.toString(p.getStock()) + "\n");
 			txtSalida.append("Precio   : " + Double.toString(p.getPrecio()) + "\n");
-			//txtSalida.append("Id Categoria: " + Integer.toString(p.getIdcategoria()) + "\n");
 			txtSalida.append("Categoria: " + p.getIdcategoria() + "/" + p.getCategoria().getDescripcion() + "\n");
 			txtSalida.append("Estado   : " + Integer.toString(p.getEstado()) + "\n");
-			txtSalida.append("Id Proveedor: " + p.getIdprovedor() + "\n");
-			txtSalida.append("Nombre Proveedor: " + p.getProveedor().getNombre_rs() + "\n");
+			txtSalida.append("Id Proveedor: " + p.getIdprovedor() + " " + p.getProveedor().getNombre_rs() + "\n");
 		}
 
+		em.close();
+	}
+
+	void buscar() {
+		EntityManagerFactory fabrica = Persistence.createEntityManagerFactory("mysql");
+		EntityManager em = fabrica.createEntityManager();
+
+		Producto p = em.find(Producto.class, txtCódigo.getText());
+
+		// Salida
+		txtDescripcion.setText(p.getDescripcion());
+		//cboCategorias.setSelectedItem(p.getCategoria().getDescripcion());
+		cboCategorias.setSelectedIndex(p.getIdcategoria());
+		txtPrecio.setText(Double.toString(p.getPrecio()));
+		txtStock.setText(Integer.toString(p.getStock()));
+		cboProveedores.setSelectedItem(p.getProveedor().getNombre_rs());
 		em.close();
 	}
 
@@ -196,9 +219,9 @@ public class FrmManteProd extends JFrame {
 		int stock = Integer.parseInt(txtStock.getText());
 		double precio = Double.parseDouble(txtPrecio.getText());
 		int categoria = cboCategorias.getSelectedIndex();
-		int estado = 1;  // valor x default -> Activo
+		int estado = 1; // valor x default -> Activo
 		int proveedor = cboProveedores.getSelectedIndex();
-		
+
 		// proceso
 		Producto p = new Producto();
 		p.setCodigo(codigo);
@@ -208,7 +231,7 @@ public class FrmManteProd extends JFrame {
 		p.setIdcategoria(categoria);
 		p.setEstado(estado);
 		p.setIdprovedor(proveedor);
-		
+
 		EntityManagerFactory fabrica = Persistence.createEntityManagerFactory("mysql");
 		EntityManager em = fabrica.createEntityManager();
 		em.getTransaction().begin();
@@ -218,7 +241,3 @@ public class FrmManteProd extends JFrame {
 		JOptionPane.showMessageDialog(this, "Producto registrado");
 	}
 }
-
-
-
-
